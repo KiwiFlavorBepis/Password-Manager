@@ -28,6 +28,7 @@ public class Main {
         String[] header = parseHeader(passwordFile);
         String salt = header[0];
         String encryptedToken = header[1];
+        System.out.println("Header salt: " + salt + "\nHeader Encrypted Token: " + encryptedToken);
         if (!verifyToken(passcode, token, salt, encryptedToken)) {
             System.out.println("Incorrect passcode!");
             System.exit(0);
@@ -129,15 +130,18 @@ public class Main {
     private static String promptUser(String prompt) {
         System.out.println(prompt);
         Scanner userInput = new Scanner(System.in);
-        //return scanner input
         return userInput.nextLine();
     }
 
+    /**
+     * Returns a secure randomly generated base 64 encoded salt String.
+     * @return A base 64 encoded String
+     */
     private static String createSalt() {
-
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
         random.nextBytes(salt);
+        System.out.println("Created salt: " + Base64.getEncoder().encodeToString(salt));
         return Base64.getEncoder().encodeToString(salt);
     }
 
@@ -183,8 +187,14 @@ public class Main {
         return decryptedString;
     }
 
+    /**
+     * Returns a CipherKey object created from a key and a salt
+     * @param key   A String used as the key
+     * @param salt  A base 64 encoded string  used as the salt
+     * @return      A CipherKey object generated using the key and salt
+     */
     private static CipherKey generateCipherKey(String key, String salt) {
-        byte[] saltBytes = salt.getBytes();
+        byte[] saltBytes = Base64.getDecoder().decode(salt);
         KeySpec keySpec = new PBEKeySpec(key.toCharArray(), saltBytes, 65536, 128);
         Cipher cipher = null;
         SecretKeySpec secretKeySpec = null;
